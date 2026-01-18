@@ -34,7 +34,7 @@ export default function TaskCard({title,status,description,progress,dueDate}) {
                             type="range"
                             min="0"
                             max="100"
-                            value={progress}
+                            // value={progress}
                             // onChange={(e) => setProgress(e.target.value)}
                             className="progress-slider"
                         />
