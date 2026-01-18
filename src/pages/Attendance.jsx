@@ -97,7 +97,7 @@ export default function Attendance() {
 
     const [showCheckIn, setShowCheckIn] = useState(true);
     const [showCheckOut, setShowCheckOut] = useState(false);
-    const [checkOutDisabled, setCheckOutDisabled] = useState(false);
+    const [checkOutDisabled] = useState(false);
     const [leaveReason, setLeaveReason] = useState("");
     const [hasCheckedIn, setHasCheckedIn] = useState(false);
     const [onLeave, setOnLeave] = useState(false);

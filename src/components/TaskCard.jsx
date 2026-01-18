@@ -1,4 +1,3 @@
-import { useState } from "react"
 export default function TaskCard({title,status,description,progress,dueDate}) {
 
     return (

@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import TaskProps from "../components/TaskProps";
-import TaskCard from "../components/TaskCard";
 export default function TasksPage() {
   return (
     <>

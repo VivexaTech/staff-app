@@ -34,5 +34,7 @@ export default function Reducer(state, action) {
                 loading: false,
                 attendance: action.attload,
             };
+        
+        default: return state;    
     }
 }
