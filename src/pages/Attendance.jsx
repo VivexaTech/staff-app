@@ -1,5 +1,5 @@
-import CalendarProps from "../components/CalendarProps"
-import Header from "../components/Header"
+import CalendarProps from "../components/CalendarProps";
+import Header from "../components/Header";
 import React, { useEffect, useState } from "react";
 import {
     addDoc,
@@ -11,86 +11,6 @@ import {
     serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../Firebase";
-// export default function Attendance() {
-//     return (
-//         <>
-//             <Header />
-//             <div className="head">
-//                 <h1>Attendance</h1>
-//             </div>
-
-//             {/* <!-- CALENDAR --> */}
-//             <div className="container mt-3">
-//                 <div className="attendance-calendar">
-//                     <div className="calendar-header">
-//                         <h6>September 2026</h6>
-//                     </div>
-
-//                     <div className="calendar-grid">
-//                         {/* <!-- Days --> */}
-//                         <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span>
-//                         <span>Thu</span><span>Fri</span><span>Sat</span>
-
-//                         {/* <!-- Dates --> */}
-//                         <div className="date absent">1</div>
-//                         <div className="date present">2</div>
-//                         <div className="date present">3</div>
-//                         <div className="date present">4</div>
-//                         <div className="date present">5</div>
-//                         <div className="date present">6</div>
-//                         <div className="date today">7</div>
-
-//                         <div className="date present">8</div>
-//                         <div className="date present">9</div>
-//                         <div className="date absent">10</div>
-//                         <div className="date present">11</div>
-//                         <div className="date present">12</div>
-//                         <div className="date present">13</div>
-//                         <div className="date present">14</div>
-
-//                         <div className="date present">15</div>
-//                         <div className="date present">16</div>
-//                         <div className="date absent">17</div>
-//                         <div className="date present">18</div>
-//                         <div className="date present">19</div>
-//                         <div className="date present">20</div>
-//                         <div className="date present">21</div>
-
-//                         <div className="date present">15</div>
-//                         <div className="date present">16</div>
-//                         <div className="date absent">17</div>
-//                         <div className="date present">18</div>
-//                         <div className="date present">19</div>
-//                         <div className="date present">20</div>
-//                         <div className="date present">21</div>
-//                     </div>
-//                 </div>
-//             </div>
-
-//             {/* <!-- ACTION BUTTONS --> */}
-//             <div className="container mt-4">
-//                 <div className="row g-3">
-
-//                     <div className="col-6">
-//                         <button className="action-btn checkin">
-//                             <i className="bi bi-box-arrow-in-right"></i>
-//                             Check In
-//                         </button>
-//                     </div>
-
-//                     <div className="col-6">
-//                         <button className="action-btn leave">
-//                             <i className="bi bi-calendar-x"></i>
-//                             Apply Leave
-//                         </button>
-//                     </div>
-
-//                 </div>
-//             </div>
-//         </>
-//     )
-// }
-
 
 export default function Attendance() {
     const staffId = "9sVjI5RuQj5QblexVRs0";
@@ -101,7 +21,7 @@ export default function Attendance() {
     const [leaveReason, setLeaveReason] = useState("");
     const [hasCheckedIn, setHasCheckedIn] = useState(false);
     const [onLeave, setOnLeave] = useState(false);
-
+    const [remainingTime, setRemainingTime] = useState(0);
 
     /* ---------------- CHECK IN ---------------- */
     const handleCheckIn = async () => {
@@ -120,11 +40,11 @@ export default function Attendance() {
         localStorage.setItem("checkInTime", now.getTime());
 
         setHasCheckedIn(true);
-        setShowCheckIn(true);   // dikhega
+        setShowCheckIn(true);
+        setShowCheckOut(false);
     };
 
-
-    /* ---------------- CHECK OUT TIMER ---------------- */
+    /* ---------------- FETCH TODAY ATTENDANCE ---------------- */
     useEffect(() => {
         const fetchTodayAttendance = async () => {
             const today = new Date().toISOString().split("T")[0];
@@ -140,14 +60,12 @@ export default function Attendance() {
             if (!snapshot.empty) {
                 const data = snapshot.docs[0].data();
 
-                // LEAVE CASE
                 if (data.status === "Leave") {
                     setOnLeave(true);
                     setShowCheckIn(false);
                     return;
                 }
 
-                // CHECK-IN DONE, CHECK-OUT PENDING
                 if (data.checkIn && !data.checkOut) {
                     setHasCheckedIn(true);
                     setShowCheckIn(true);
@@ -157,7 +75,6 @@ export default function Attendance() {
                     );
                 }
 
-                // CHECK-OUT DONE
                 if (data.checkOut) {
                     setShowCheckIn(false);
                     setShowCheckOut(false);
@@ -168,6 +85,30 @@ export default function Attendance() {
         fetchTodayAttendance();
     }, []);
 
+    /* ---------------- TIMER (3 HOURS) ---------------- */
+    useEffect(() => {
+        let interval;
+
+        if (hasCheckedIn) {
+            interval = setInterval(() => {
+                const checkInTime = Number(localStorage.getItem("checkInTime"));
+                if (!checkInTime) return;
+
+                const now = new Date().getTime();
+                const diff = 3 * 60 * 60 * 1000 - (now - checkInTime);
+
+                if (diff <= 0) {
+                    setRemainingTime(0);
+                    setShowCheckOut(true);
+                    clearInterval(interval);
+                } else {
+                    setRemainingTime(diff);
+                }
+            }, 1000);
+        }
+
+        return () => clearInterval(interval);
+    }, [hasCheckedIn]);
 
     /* ---------------- CHECK OUT ---------------- */
     const handleCheckOut = async () => {
@@ -177,7 +118,7 @@ export default function Attendance() {
         );
 
         const diffHours = (now - checkInTime) / (1000 * 60 * 60);
-        const status = diffHours <= 4 ? "Present" : "Absent";
+        const status = diffHours >= 3 ? "Present" : "Absent";
 
         const q = query(
             collection(db, "attendance"),
@@ -219,18 +160,33 @@ export default function Attendance() {
         setOnLeave(true);
         setShowCheckIn(false);
     };
+
+    /* ---------------- TIME FORMAT ---------------- */
+    const formatTime = (ms) => {
+        const totalSeconds = Math.floor(ms / 1000);
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        return `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    };
+
     return (
-        <> 
+        <>
             <Header />
             <CalendarProps />
+
             <div className="attendance-card">
                 <h2>Staff Attendance</h2>
 
                 {/* CHECK IN */}
                 {showCheckIn && !onLeave && (
                     <button
-                        className={`attendance-btn btn-checkin ${hasCheckedIn ? "btn-disabled" : ""
-                            }`}
+                        className={`attendance-btn btn-checkin ${
+                            hasCheckedIn ? "btn-disabled" : ""
+                        }`}
                         onClick={handleCheckIn}
                         disabled={hasCheckedIn}
                     >
@@ -238,24 +194,25 @@ export default function Attendance() {
                     </button>
                 )}
 
-                {/* MESSAGE AFTER CHECK IN */}
+                {/* TIMER */}
                 {hasCheckedIn && !showCheckOut && (
-                    <p className="info-text">Come after 3 hours</p>
+                    <p className="info-text">
+                        Check out available in:{" "}
+                        <b>{formatTime(remainingTime)}</b>
+                    </p>
                 )}
 
                 {/* CHECK OUT */}
                 {showCheckOut && (
                     <button
-                        className={`attendance-btn btn-checkout ${checkOutDisabled ? "btn-disabled" : ""
-                            }`}
+                        className="attendance-btn btn-checkout"
                         onClick={handleCheckOut}
-                        disabled={checkOutDisabled}
                     >
                         Check Out
                     </button>
                 )}
 
-                {/* LEAVE SECTION */}
+                {/* LEAVE */}
                 {!hasCheckedIn && !onLeave && (
                     <div className="leave-box">
                         <textarea
@@ -263,18 +220,22 @@ export default function Attendance() {
                             value={leaveReason}
                             onChange={(e) => setLeaveReason(e.target.value)}
                         />
-                        <button className="attendance-btn btn-leave" onClick={handleLeave}>
+                        <button
+                            className="attendance-btn btn-leave"
+                            onClick={handleLeave}
+                        >
                             Apply Leave
                         </button>
                     </div>
                 )}
 
-                {/* LEAVE APPROVED MESSAGE */}
+                {/* LEAVE MESSAGE */}
                 {onLeave && (
-                    <p className="approved-text">Your leave is approved ✅</p>
+                    <p className="approved-text">
+                        Your leave is approved ✅
+                    </p>
                 )}
             </div>
-
         </>
-    )
+    );
 }
