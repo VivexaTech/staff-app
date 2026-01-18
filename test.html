@@ -1,0 +1,150 @@
+import React, { useEffect, useState } from "react";
+import {
+    addDoc,
+    collection,
+    updateDoc,
+    query,
+    where,
+    getDocs,
+    serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../Firebase";
+
+const Attendance = () => {
+    const staffId = "STF001";
+
+    const [showCheckIn, setShowCheckIn] = useState(true);
+    const [showCheckOut, setShowCheckOut] = useState(false);
+    const [checkOutDisabled, setCheckOutDisabled] = useState(false);
+    const [leaveReason, setLeaveReason] = useState("");
+
+    /* ---------------- CHECK IN ---------------- */
+    const handleCheckIn = async () => {
+        const now = new Date();
+
+        await addDoc(collection(db, "attendance"), {
+            staffId,
+            date: now.toISOString().split("T")[0],
+            checkIn: now.toLocaleTimeString(),
+            checkOut: null,
+            status: "Pending",
+            leaveReason: "",
+            createdAt: serverTimestamp(),
+        });
+
+        localStorage.setItem("checkInTime", now.getTime());
+        setShowCheckIn(false);
+    };
+
+    /* ---------------- CHECK OUT TIMER ---------------- */
+    useEffect(() => {
+        const timer = setInterval(() => {
+            const checkInTime = localStorage.getItem("checkInTime");
+            if (!checkInTime) return;
+
+            const now = Date.now();
+            const diffHours = (now - checkInTime) / (1000 * 60 * 60);
+
+            // 3 ghante baad show
+            if (diffHours >= 3 && diffHours < 4) {
+                setShowCheckOut(true);
+                setCheckOutDisabled(false);
+            }
+
+            // 4 ghante baad disable
+            if (diffHours >= 4) {
+                setShowCheckOut(true);
+                setCheckOutDisabled(true);
+            }
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
+
+    /* ---------------- CHECK OUT ---------------- */
+    const handleCheckOut = async () => {
+        const now = new Date();
+        const checkInTime = new Date(
+            Number(localStorage.getItem("checkInTime"))
+        );
+
+        const diffHours = (now - checkInTime) / (1000 * 60 * 60);
+        const status = diffHours <= 4 ? "Present" : "Absent";
+
+        const q = query(
+            collection(db, "attendance"),
+            where("staffId", "==", staffId),
+            where("date", "==", now.toISOString().split("T")[0])
+        );
+
+        const snapshot = await getDocs(q);
+        snapshot.forEach(async (docSnap) => {
+            await updateDoc(docSnap.ref, {
+                checkOut: now.toLocaleTimeString(),
+                status,
+            });
+        });
+
+        localStorage.removeItem("checkInTime");
+        setShowCheckOut(false);
+    };
+
+    /* ---------------- LEAVE ---------------- */
+    const handleLeave = async () => {
+        if (!leaveReason) {
+            alert("Reason likho");
+            return;
+        }
+
+        const now = new Date();
+
+        await addDoc(collection(db, "attendance"), {
+            staffId,
+            date: now.toISOString().split("T")[0],
+            checkIn: null,
+            checkOut: null,
+            status: "Leave",
+            leaveReason,
+            createdAt: serverTimestamp(),
+        });
+
+        setLeaveReason("");
+        setShowCheckIn(false);
+    };
+
+    return (
+        <div style={{ padding: 20 }}>
+            <h2>Attendance</h2>
+
+            {showCheckIn && (
+                <button onClick={handleCheckIn}>Check In</button>
+            )}
+
+            {showCheckOut && (
+                <button
+                    onClick={handleCheckOut}
+                    disabled={checkOutDisabled}
+                    style={{
+                        marginLeft: 10,
+                        opacity: checkOutDisabled ? 0.5 : 1,
+                        cursor: checkOutDisabled ? "not-allowed" : "pointer",
+                    }}
+                >
+                    Check Out
+                </button>
+            )}
+
+            <div style={{ marginTop: 20 }}>
+                <textarea
+                    placeholder="Leave reason..."
+                    value={leaveReason}
+                    onChange={(e) => setLeaveReason(e.target.value)}
+                />
+                <br />
+                <button onClick={handleLeave}>Leave</button>
+            </div>
+        </div>
+    );
+};
+
+export default Attendance;

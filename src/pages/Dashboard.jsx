@@ -1,46 +1,55 @@
-import { db } from "../Firebase"
+import { useGlobal } from "../ContextData.jsx"
 import Header from "../components/Header"
+
 export default function Dashboard() {
-  console.log(db)
+  const { staff = [], tasks = [], attendance } = useGlobal()
+  const userid = "9sVjI5RuQj5QblexVRs0"
+  const userTasks = tasks.filter(task => task.assigneeId === userid);
+  const taskStatusVa = "Pending"
+  const taskStatus = userTasks.filter(taskStat => taskStat.status === taskStatusVa);
+  const userData = staff.filter(staf => staf.id === userid);
+  const userAttendance = attendance.filter(att => att.staffId === userid);
+  const userPre = "present"
+  const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
   return (
     <>
       <Header />
-      <div class="head">
+      <div className="head">
         <h1>Dashboard</h1>
       </div>
 
-      <div class="username">
-        <h1>Welcome, Vivek 👋</h1>
+      <div className="username">
+        <h1>Welcome, {userData[0]?.name} 👋</h1>
       </div>
-      <div class="container mt-4">
+      <div className="container mt-4">
 
-        <h6 class="text-light mb-2">Latest Updates</h6>
+        <h6 className="text-light mb-2">Latest Updates</h6>
 
-        <div id="postSlider" class="carousel slide" data-bs-ride="carousel">
-          <div class="carousel-inner">
+        <div id="postSlider" className="carousel slide" data-bs-ride="carousel">
+          <div className="carousel-inner">
 
             {/* <!-- Slide 1 --> */}
-            <div class="carousel-item active">
-              <div class="post-card">
-                <i class="bi bi-megaphone"></i>
+            <div className="carousel-item active">
+              <div className="post-card">
+                <i className="bi bi-megaphone"></i>
                 <h6>Holiday Notice</h6>
-                <p>Tomorrow school will remain closed.</p>
+                <p>Sunday remain closed.</p>
               </div>
             </div>
 
             {/* <!-- Slide 2 --> */}
-            <div class="carousel-item">
-              <div class="post-card">
-                <i class="bi bi-clock"></i>
+            <div className="carousel-item">
+              <div className="post-card">
+                <i className="bi bi-clock"></i>
                 <h6>Attendance Update</h6>
                 <p>Mark attendance before 10 AM.</p>
               </div>
             </div>
 
             {/* <!-- Slide 3 --> */}
-            <div class="carousel-item">
-              <div class="post-card">
-                <i class="bi bi-list-check"></i>
+            <div className="carousel-item">
+              <div className="post-card">
+                <i className="bi bi-list-check"></i>
                 <h6>Task Reminder</h6>
                 <p>Submit today's task by evening.</p>
               </div>
@@ -52,47 +61,48 @@ export default function Dashboard() {
       </div>
 
 
-      <div class="container mt-4">
-        <div class="row g-3">
+      <div className="container mt-4">
+        <div className="row g-3">
 
           {/* <!-- Task Card --> */}
-          <div class="col-6">
-            <div class="dash-card bg-task">
-              <div class="icon-box">
-                <i class="bi bi-list-check"></i>
+          <div className="col-6">
+            <div className="dash-card bg-task">
+              <div className="icon-box">
+                <i className="bi bi-list-check"></i>
               </div>
-              <h4>220</h4>
+              <h4>{userTasks.length}</h4>
               <p>Total Tasks</p>
             </div>
           </div>
 
           {/* <!-- Attendance Card --> */}
-          <div class="col-6">
-            <div class="dash-card bg-attendance">
-              <div class="icon-box">
-                <i class="bi bi-person-check"></i>
+          <div className="col-6">
+            <div className="dash-card bg-attendance">
+              <div className="icon-box">
+                <i className="bi bi-person-check"></i>
               </div>
-              <h4>24</h4>
+              <h4>{PresUser.length}</h4>
               <p>Attendance</p>
+
             </div>
           </div>
 
           {/* <!-- Pending Card --> */}
-          <div class="col-6">
-            <div class="dash-card bg-pending">
-              <div class="icon-box">
-                <i class="bi bi-clock-history"></i>
+          <div className="col-6">
+            <div className="dash-card bg-pending">
+              <div className="icon-box">
+                <i className="bi bi-clock-history"></i>
               </div>
-              <h4>190</h4>
+              <h4>{taskStatus.length}</h4>
               <p>Pending</p>
             </div>
           </div>
 
           {/* <!-- Payment Card --> */}
-          <div class="col-6">
-            <div class="dash-card bg-payment">
-              <div class="icon-box">
-                <i class="bi bi-trophy"></i>
+          <div className="col-6">
+            <div className="dash-card bg-payment">
+              <div className="icon-box">
+                <i className="bi bi-trophy"></i>
               </div>
               <h4>Rank</h4>
               <p>3rd</p>

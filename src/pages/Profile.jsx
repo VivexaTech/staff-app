@@ -1,68 +1,79 @@
-import Header from "../components/Header"
-export default function Profile(){
-    return(
-        <>
-        <div class="head">
-  <h1>Profile</h1>
-</div>
+import Header from "../components/Header";
+import { useGlobal } from "../ContextData";
 
-{/* <!-- PROFILE CARD --> */}
-<div class="container mt-3">
-  <div class="profile-card">
-
-    <div class="profile-top">
-      <img src="https://i.pravatar.cc/150?img=12" alt="User"/>
-      <h4>Vivek Kumar</h4>
-      <span>Employee ID: EMP1024</span>
-    </div>
-
-    <div class="profile-info">
-      <div>
-        <i class="bi bi-telephone"></i>
-        <span>+91 98765 43210</span>
+export default function ProfilePage() {
+  const { staff = [], tasks = [], attendance } = useGlobal()
+  const userid = "9sVjI5RuQj5QblexVRs0"
+  const userData = staff.filter(staf => staf.id === userid);
+  const userTasks = tasks.filter(task => task.assigneeId === userid);
+  const userAttendance = attendance.filter(att => att.staffId === userid);
+  const userPre = "present"
+  const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
+  return (
+    <>
+      <div className="head d-flex justify-content-between align-items-center">
+        <h1>Profile</h1>
+        <button
+          // onClick={/handleLogout}
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#dfff6a",
+            fontSize: "14px"
+          }}
+        >
+          Logout
+        </button>
       </div>
-      <div>
-        <i class="bi bi-envelope"></i>
-        <span>vivek@email.com</span>
+      <div className="container mt-3">
+        <div className="profile-card">
+          <div className="profile-top">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5MIlOl7pL62rbIWa-xmrjAoLg0Eg869mmYw&s" alt="User" />
+            <h4>{userData[0]?.name}</h4>
+            <span>Employee ID: {userData[0]?.employeeId}</span>
+          </div>
+
+          <div className="profile-info">
+            <div>
+              <i className="bi bi-telephone"></i>
+              <span>+91 {userData[0]?.phone}</span>
+            </div>
+            <div>
+              <i className="bi bi-envelope"></i>
+              <span>{userData[0]?.email}</span>
+            </div>
+            <div>
+              <i className="bi bi-geo-alt"></i>
+              <span>{userData[0]?.address}</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <i class="bi bi-geo-alt"></i>
-        <span>Gurugram, Haryana</span>
+      <div className="container mt-4">
+        <div className="row g-3">
+          <div className="col-4">
+            <div className="mini-stat">
+              <h4>3</h4>
+              <p>Rank</p>
+            </div>
+          </div>
+
+          <div className="col-4">
+            <div className="mini-stat">
+              <h4>{userTasks.length}</h4>
+              <p>Total Tasks</p>
+            </div>
+          </div>
+
+          <div className="col-4">
+            <div className="mini-stat">
+              <h4>{PresUser.length}</h4>
+              <p>Attendance</p>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-
-  </div>
-</div>
-
-{/* <!-- STATS --> */}
-<div class="container mt-4">
-  <div class="row g-3">
-
-    <div class="col-4">
-      <div class="mini-stat">
-        <h4>3</h4>
-        <p>Rank</p>
-      </div>
-    </div>
-
-    <div class="col-4">
-      <div class="mini-stat">
-        <h4>220</h4>
-        <p>Total Tasks</p>
-      </div>
-    </div>
-
-    <div class="col-4">
-      <div class="mini-stat">
-        <h4>24</h4>
-        <p>Attendance</p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<Header/>
-        </>
-    )
+      <Header />
+    </>
+  );
 }
