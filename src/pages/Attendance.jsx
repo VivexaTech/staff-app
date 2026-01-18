@@ -14,39 +14,19 @@ import { db } from "../Firebase";
 
 export default function Attendance() {
     const staffId = "9sVjI5RuQj5QblexVRs0";
+    const WORK_HOURS = 3 * 60 * 60 * 1000; // 3 hours
 
+    const [attendanceDoc, setAttendanceDoc] = useState(null);
     const [showCheckIn, setShowCheckIn] = useState(true);
     const [showCheckOut, setShowCheckOut] = useState(false);
-    const [checkOutDisabled] = useState(false);
-    const [leaveReason, setLeaveReason] = useState("");
     const [hasCheckedIn, setHasCheckedIn] = useState(false);
     const [onLeave, setOnLeave] = useState(false);
+    const [leaveReason, setLeaveReason] = useState("");
     const [remainingTime, setRemainingTime] = useState(0);
-
-    /* ---------------- CHECK IN ---------------- */
-    const handleCheckIn = async () => {
-        const now = new Date();
-
-        await addDoc(collection(db, "attendance"), {
-            staffId,
-            date: now.toISOString().split("T")[0],
-            checkIn: now.toLocaleTimeString(),
-            checkOut: null,
-            status: "Pending",
-            leaveReason: "",
-            createdAt: serverTimestamp(),
-        });
-
-        localStorage.setItem("checkInTime", now.getTime());
-
-        setHasCheckedIn(true);
-        setShowCheckIn(true);
-        setShowCheckOut(false);
-    };
 
     /* ---------------- FETCH TODAY ATTENDANCE ---------------- */
     useEffect(() => {
-        const fetchTodayAttendance = async () => {
+        const fetchAttendance = async () => {
             const today = new Date().toISOString().split("T")[0];
 
             const q = query(
@@ -58,7 +38,10 @@ export default function Attendance() {
             const snapshot = await getDocs(q);
 
             if (!snapshot.empty) {
-                const data = snapshot.docs[0].data();
+                const doc = snapshot.docs[0];
+                const data = doc.data();
+
+                setAttendanceDoc(doc);
 
                 if (data.status === "Leave") {
                     setOnLeave(true);
@@ -69,10 +52,6 @@ export default function Attendance() {
                 if (data.checkIn && !data.checkOut) {
                     setHasCheckedIn(true);
                     setShowCheckIn(true);
-                    localStorage.setItem(
-                        "checkInTime",
-                        new Date(`${today} ${data.checkIn}`).getTime()
-                    );
                 }
 
                 if (data.checkOut) {
@@ -82,20 +61,51 @@ export default function Attendance() {
             }
         };
 
-        fetchTodayAttendance();
+        fetchAttendance();
     }, []);
 
-    /* ---------------- TIMER (3 HOURS) ---------------- */
+    /* ---------------- CHECK IN ---------------- */
+    const handleCheckIn = async () => {
+        const now = new Date();
+
+        const docRef = await addDoc(collection(db, "attendance"), {
+            staffId,
+            date: now.toISOString().split("T")[0],
+            checkIn: now.toLocaleTimeString(),
+            checkOut: null,
+            status: "Pending",
+            leaveReason: "",
+            createdAt: serverTimestamp(),
+        });
+
+        setAttendanceDoc({ id: docRef.id });
+        setHasCheckedIn(true);
+        setShowCheckIn(true);
+    };
+
+    /* ---------------- TIMER (FIREBASE BASED) ---------------- */
     useEffect(() => {
         let interval;
 
-        if (hasCheckedIn) {
-            interval = setInterval(() => {
-                const checkInTime = Number(localStorage.getItem("checkInTime"));
-                if (!checkInTime) return;
+        if (hasCheckedIn && attendanceDoc) {
+            interval = setInterval(async () => {
+                const snapshot = await getDocs(
+                    query(
+                        collection(db, "attendance"),
+                        where("staffId", "==", staffId),
+                        where("date", "==", new Date().toISOString().split("T")[0])
+                    )
+                );
 
-                const now = new Date().getTime();
-                const diff = 3 * 60 * 60 * 1000 - (now - checkInTime);
+                if (snapshot.empty) return;
+
+                const data = snapshot.docs[0].data();
+                if (!data.createdAt) return;
+
+                const checkInTime = data.createdAt.toDate().getTime();
+                const now = Date.now();
+
+                const diff = WORK_HOURS - (now - checkInTime);
 
                 if (diff <= 0) {
                     setRemainingTime(0);
@@ -108,33 +118,22 @@ export default function Attendance() {
         }
 
         return () => clearInterval(interval);
-    }, [hasCheckedIn]);
+    }, [hasCheckedIn, attendanceDoc]);
 
     /* ---------------- CHECK OUT ---------------- */
     const handleCheckOut = async () => {
+        if (!attendanceDoc) return;
+
         const now = new Date();
-        const checkInTime = new Date(
-            Number(localStorage.getItem("checkInTime"))
-        );
 
-        const diffHours = (now - checkInTime) / (1000 * 60 * 60);
-        const status = diffHours >= 3 ? "Present" : "Absent";
-
-        const q = query(
-            collection(db, "attendance"),
-            where("staffId", "==", staffId),
-            where("date", "==", now.toISOString().split("T")[0])
-        );
-
-        const snapshot = await getDocs(q);
-        snapshot.forEach(async (docSnap) => {
-            await updateDoc(docSnap.ref, {
+        await updateDoc(
+            collection(db, "attendance").doc(attendanceDoc.id),
+            {
                 checkOut: now.toLocaleTimeString(),
-                status,
-            });
-        });
+                status: "Present",
+            }
+        );
 
-        localStorage.removeItem("checkInTime");
         setShowCheckOut(false);
     };
 
@@ -164,13 +163,13 @@ export default function Attendance() {
     /* ---------------- TIME FORMAT ---------------- */
     const formatTime = (ms) => {
         const totalSeconds = Math.floor(ms / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
+        const h = Math.floor(totalSeconds / 3600);
+        const m = Math.floor((totalSeconds % 3600) / 60);
+        const s = totalSeconds % 60;
 
-        return `${hours.toString().padStart(2, "0")}:${minutes
+        return `${h.toString().padStart(2, "0")}:${m
             .toString()
-            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+            .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
     };
 
     return (
@@ -181,12 +180,9 @@ export default function Attendance() {
             <div className="attendance-card">
                 <h2>Staff Attendance</h2>
 
-                {/* CHECK IN */}
                 {showCheckIn && !onLeave && (
                     <button
-                        className={`attendance-btn btn-checkin ${
-                            hasCheckedIn ? "btn-disabled" : ""
-                        }`}
+                        className="attendance-btn btn-checkin"
                         onClick={handleCheckIn}
                         disabled={hasCheckedIn}
                     >
@@ -194,7 +190,6 @@ export default function Attendance() {
                     </button>
                 )}
 
-                {/* TIMER */}
                 {hasCheckedIn && !showCheckOut && (
                     <p className="info-text">
                         Check out available in:{" "}
@@ -202,7 +197,6 @@ export default function Attendance() {
                     </p>
                 )}
 
-                {/* CHECK OUT */}
                 {showCheckOut && (
                     <button
                         className="attendance-btn btn-checkout"
@@ -212,7 +206,6 @@ export default function Attendance() {
                     </button>
                 )}
 
-                {/* LEAVE */}
                 {!hasCheckedIn && !onLeave && (
                     <div className="leave-box">
                         <textarea
@@ -229,7 +222,6 @@ export default function Attendance() {
                     </div>
                 )}
 
-                {/* LEAVE MESSAGE */}
                 {onLeave && (
                     <p className="approved-text">
                         Your leave is approved ✅
