@@ -219,14 +219,6 @@ export default function Attendance() {
         setOnLeave(true);
         setShowCheckIn(false);
     };
-    const getCheckInTime = () => {
-        if (typeof window !== "undefined") {
-            return localStorage.getItem("checkInTime");
-        }
-        return null;
-    };
-
-
     return (
         <>
             <Header />
