@@ -220,7 +220,7 @@ export default function Attendance() {
         setShowCheckIn(false);
     };
     return (
-        <>
+        <> 
             <Header />
             <CalendarProps />
             <div className="attendance-card">
