@@ -125,48 +125,48 @@ export default function Attendance() {
 
 
     /* ---------------- CHECK OUT TIMER ---------------- */
-useEffect(() => {
-  const fetchTodayAttendance = async () => {
-    const today = new Date().toISOString().split("T")[0];
+    useEffect(() => {
+        const fetchTodayAttendance = async () => {
+            const today = new Date().toISOString().split("T")[0];
 
-    const q = query(
-      collection(db, "attendance"),
-      where("staffId", "==", staffId),
-      where("date", "==", today)
-    );
+            const q = query(
+                collection(db, "attendance"),
+                where("staffId", "==", staffId),
+                where("date", "==", today)
+            );
 
-    const snapshot = await getDocs(q);
+            const snapshot = await getDocs(q);
 
-    if (!snapshot.empty) {
-      const data = snapshot.docs[0].data();
+            if (!snapshot.empty) {
+                const data = snapshot.docs[0].data();
 
-      // LEAVE CASE
-      if (data.status === "Leave") {
-        setOnLeave(true);
-        setShowCheckIn(false);
-        return;
-      }
+                // LEAVE CASE
+                if (data.status === "Leave") {
+                    setOnLeave(true);
+                    setShowCheckIn(false);
+                    return;
+                }
 
-      // CHECK-IN DONE, CHECK-OUT PENDING
-      if (data.checkIn && !data.checkOut) {
-        setHasCheckedIn(true);
-        setShowCheckIn(true);
-        localStorage.setItem(
-          "checkInTime",
-          new Date(`${today} ${data.checkIn}`).getTime()
-        );
-      }
+                // CHECK-IN DONE, CHECK-OUT PENDING
+                if (data.checkIn && !data.checkOut) {
+                    setHasCheckedIn(true);
+                    setShowCheckIn(true);
+                    localStorage.setItem(
+                        "checkInTime",
+                        new Date(`${today} ${data.checkIn}`).getTime()
+                    );
+                }
 
-      // CHECK-OUT DONE
-      if (data.checkOut) {
-        setShowCheckIn(false);
-        setShowCheckOut(false);
-      }
-    }
-  };
+                // CHECK-OUT DONE
+                if (data.checkOut) {
+                    setShowCheckIn(false);
+                    setShowCheckOut(false);
+                }
+            }
+        };
 
-  fetchTodayAttendance();
-}, []);
+        fetchTodayAttendance();
+    }, []);
 
 
     /* ---------------- CHECK OUT ---------------- */
@@ -219,6 +219,13 @@ useEffect(() => {
         setOnLeave(true);
         setShowCheckIn(false);
     };
+    const getCheckInTime = () => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("checkInTime");
+        }
+        return null;
+    };
+
 
     return (
         <>
