@@ -10,7 +10,7 @@ const initialStaff = {
     staff: []
 };
 
-const initialTasks = {
+const initialTasks = { 
     loading: true,
     tasks: []
 };
