@@ -179,7 +179,7 @@ export default function Attendance() {
             <CalendarProps />
 
             <div className="attendance-card">
-                <h2>Staff Attendance</h2>
+                <h2>Mark Your Attendance</h2>
 
                 {showCheckIn && !onLeave && (
                     <button
