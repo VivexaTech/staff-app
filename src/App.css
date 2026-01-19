@@ -3,6 +3,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-user-select: none;
 }
 
 body {
@@ -14,7 +15,7 @@ body {
 }
 
 
-/* @media (max-width: 460px){ */
+@media (max-width: 460px){
 body {
   display: block;
 }
@@ -576,4 +577,5 @@ body {
 
 .google-btn:hover {
   background: #f1f1f1;
+}
 }

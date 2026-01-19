@@ -9,9 +9,6 @@ export default function TaskProps() {
     const userTasks = tasks.filter(task => task.assigneeId === userid);
     const ActiveTask = userTasks.filter(taskStat => RemTask.includes(taskStat.status));
     const CompTask = userTasks.filter(taskStat => taskStat.status === ComplTask);
-    console.log(ActiveTask)
-    console.log(CompTask)
-
     return (
         <>
             {
