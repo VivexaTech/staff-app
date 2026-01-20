@@ -24,6 +24,18 @@ body {
 /* HEADER */
 .head {
   padding: 20px 20px 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #00e5ff;
+  cursor: pointer;
 }
 
 .head h1 {
@@ -261,6 +273,7 @@ body {
   background: #2ecc71;
   color: #000;
 }
+
 .leave {
   background: #1e495a;
   color: #ffffff;
@@ -583,6 +596,7 @@ body {
 .google-btn:hover {
   background: #f1f1f1;
 }
+
 /* TASK PROOF FORM CARD */
 .task-form-card {
   background: #16161d;
@@ -677,6 +691,7 @@ body {
   cursor: not-allowed;
   opacity: 0.6;
 }
+
 /* FORM WRAPPER */
 .task-form-wrapper {
   padding: 0 20px;

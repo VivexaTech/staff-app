@@ -7,20 +7,29 @@ export default function Dashboard() {
   const userTasks = tasks.filter(task => task.assigneeId === userId);
   const taskStatusVa = "Pending"
   const taskStatus = userTasks.filter(taskStat => taskStat.status === taskStatusVa);
-  const userData = staff.filter(staf => staf.email === userId);
+  const userData = staff.filter(staf => staf.employeeId === userId);
   const userAttendance = attendance.filter(att => att.staffId === userId);
   const userPre = "present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
+  console.log(staff)
   return (
     <>
       <Header />
       <div className="head">
         <h1>Dashboard</h1>
+
+        <div className="profile">
+          <img
+            src={userData[0]?.profile || "/default-avatar.png"}
+            alt="Profile"
+          />
+        </div>
       </div>
 
       <div className="username">
         <h1>Welcome, {userData[0]?.name} 👋</h1>
       </div>
+
       <div className="container mt-4">
 
         <h6 className="text-light mb-2">Latest Updates</h6>
