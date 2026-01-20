@@ -57,6 +57,7 @@ export default function TaskForm() {
                     </form>
 
                     <iframe
+                        title="Task related document preview"
                         name="hidden_iframe"
                         style={{ display: "none" }}
                         onLoad={handleLoad}
