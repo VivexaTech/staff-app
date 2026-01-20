@@ -3,10 +3,10 @@ import { useGlobal } from "../ContextData";
 
 export default function ProfilePage() {
   const { staff = [], tasks = [], attendance } = useGlobal()
-  const userid = staff[0]?.employeeId
-  const userData = staff.filter(staf => staf.employeeId === userid);
-  const userTasks = tasks.filter(task => task.assigneeId === userid);
-  const userAttendance = attendance.filter(att => att.staffId === userid);
+  const userId = staff[0]?.employeeId
+  const userData = staff.filter(staf => staf.employeeId === userId);
+  const userTasks = tasks.filter(task => task.assigneeId === userId);
+  const userAttendance = attendance.filter(att => att.staffId === userId);
   const userPre = "present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
   return (

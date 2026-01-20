@@ -45,6 +45,15 @@ export default function ContextData({ children }) {
             }));
             dispatchTasks({ type: "LOAD_TASK_SUCCESS", taskload: taskData });
 
+            // // Task Form
+            // dispatchTasks({ type: "LOAD_TASK_START" });
+            // const taskApi = await getDocs(collection(db, "tasks"));
+            // const taskData = taskApi.docs.map(doc => ({
+            //     id: doc.id,
+            //     ...doc.data()
+            // }));
+            dispatchTasks({ type: "LOAD_TASK_SUCCESS", taskload: taskData });
+
             // Attendance Data
             dispatchAttendance({ type: "LOAD_ATT_START" });
 
@@ -60,7 +69,7 @@ export default function ContextData({ children }) {
     }, []);
 
     return (
-        <Context.Provider value={{ ...tasks, ...staff, ...attendance}}>
+        <Context.Provider value={{ ...tasks, ...staff, ...attendance }}>
             {children}
         </Context.Provider>
     );

@@ -3,10 +3,10 @@ import ComTask from "./ComTask";
 import { useGlobal } from "../ContextData";
 export default function TaskProps() {
     const { tasks, staff } = useGlobal()
-    const userid = staff[0]?.employeeId
+    const userId = staff[0]?.employeeId
     const ComplTask = "Completed"
     const RemTask = ["Pending", "In-Progress"]
-    const userTasks = tasks.filter(task => task.assigneeId === userid);
+    const userTasks = tasks.filter(task => task.assigneeId === userId);
     const ActiveTask = userTasks.filter(taskStat => RemTask.includes(taskStat.status));
     const CompTask = userTasks.filter(taskStat => taskStat.status === ComplTask);
     return (

@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 export default function CalendarProps() {
 
     const { attendance, staff } = useGlobal();
-     const userid = staff[0]?.employeeId
+     const userId = staff[0]?.employeeId
 
     const userAttendance = attendance.filter(
-        att => att.staffId === userid
+        att => att.staffId === userId
     );
 
     const [currentDate, setCurrentDate] = useState(new Date());

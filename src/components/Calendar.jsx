@@ -1,4 +1,4 @@
-export default function Calendar({year,monthName,dates}) {
+export default function Calendar({ year, monthName, dates }) {
     return (
         <>
             <div className="head">
