@@ -5,7 +5,7 @@ import ProfilePage from './pages/Profile';
 import Attendance from './pages/Attendance';
 import TasksPage from './pages/Task';
 import SubmitTask from './pages/SubmitTask';
-// import Login from './pages/Login';
+import Login from './pages/Login';
 // import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -24,7 +24,7 @@ function App() {
     </BrowserRouter> */}
       <BrowserRouter>
         <Routes>
-          {/* <Route path="/Login" element={<Login />} /> */}
+          <Route path="/Login" element={<Login />} />
           <Route path="/" element={<Dashboard />} />
           <Route path="/Task" element={<TasksPage />} />
           <Route path="/Task/SubmitTask" element={<SubmitTask />} />

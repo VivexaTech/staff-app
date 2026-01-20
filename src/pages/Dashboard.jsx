@@ -3,12 +3,12 @@ import Header from "../components/Header"
 
 export default function Dashboard() {
   const { staff = [], tasks = [], attendance } = useGlobal()
-  const userid = "9sVjI5RuQj5QblexVRs0"
-  const userTasks = tasks.filter(task => task.assigneeId === userid);
+  const userId = staff[0]?.employeeId
+  const userTasks = tasks.filter(task => task.assigneeId === userId);
   const taskStatusVa = "Pending"
   const taskStatus = userTasks.filter(taskStat => taskStat.status === taskStatusVa);
-  const userData = staff.filter(staf => staf.id === userid);
-  const userAttendance = attendance.filter(att => att.staffId === userid);
+  const userData = staff.filter(staf => staf.email === userId);
+  const userAttendance = attendance.filter(att => att.staffId === userId);
   const userPre = "present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
   return (

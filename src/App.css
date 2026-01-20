@@ -15,7 +15,7 @@ body {
 }
 
 
-@media (max-width: 460px){
+/* @media (max-width: 460px){ */
 body {
   display: block;
 }
@@ -259,6 +259,10 @@ body {
 .present {
   background: #2ecc71;
   color: #000;
+}
+.leave {
+  background: #1e495a;
+  color: #ffffff;
 }
 
 .absent {
@@ -578,4 +582,4 @@ body {
 .google-btn:hover {
   background: #f1f1f1;
 }
-}
+/* } */

@@ -3,8 +3,8 @@ import { useGlobal } from "../ContextData";
 
 export default function ProfilePage() {
   const { staff = [], tasks = [], attendance } = useGlobal()
-  const userid = "9sVjI5RuQj5QblexVRs0"
-  const userData = staff.filter(staf => staf.id === userid);
+  const userid = staff[0]?.employeeId
+  const userData = staff.filter(staf => staf.employeeId === userid);
   const userTasks = tasks.filter(task => task.assigneeId === userid);
   const userAttendance = attendance.filter(att => att.staffId === userid);
   const userPre = "present"
@@ -28,7 +28,7 @@ export default function ProfilePage() {
       <div className="container mt-3">
         <div className="profile-card">
           <div className="profile-top">
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5MIlOl7pL62rbIWa-xmrjAoLg0Eg869mmYw&s" alt="User" />
+            <img src={userData[0]?.profile} alt="User" />
             <h4>{userData[0]?.name}</h4>
             <span>Employee ID: {userData[0]?.employeeId}</span>
           </div>

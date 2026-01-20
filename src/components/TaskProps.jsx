@@ -2,8 +2,8 @@ import TaskCard from "./TaskCard";
 import ComTask from "./ComTask";
 import { useGlobal } from "../ContextData";
 export default function TaskProps() {
-    const { tasks } = useGlobal()
-    const userid = "9sVjI5RuQj5QblexVRs0"
+    const { tasks, staff } = useGlobal()
+    const userid = staff[0]?.employeeId
     const ComplTask = "Completed"
     const RemTask = ["Pending", "In-Progress"]
     const userTasks = tasks.filter(task => task.assigneeId === userid);

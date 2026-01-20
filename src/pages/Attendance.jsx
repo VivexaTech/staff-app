@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect, useState } from "react";
 import CalendarProps from "../components/CalendarProps";
 import Header from "../components/Header";
-import React, { useEffect, useState } from "react";
 import {
     addDoc,
     collection,
@@ -10,54 +10,60 @@ import {
     where,
     getDocs,
     serverTimestamp,
+    Timestamp,
+    doc
 } from "firebase/firestore";
 import { db } from "../Firebase";
 
-export default function Attendance() {
+export default function Attendance() { 
     const staffId = "9sVjI5RuQj5QblexVRs0";
     const WORK_HOURS = 3 * 60 * 60 * 1000; // 3 hours
 
     const [attendanceDoc, setAttendanceDoc] = useState(null);
-    const [showCheckIn, setShowCheckIn] = useState(true);
-    const [showCheckOut, setShowCheckOut] = useState(false);
     const [hasCheckedIn, setHasCheckedIn] = useState(false);
+    const [showCheckOut, setShowCheckOut] = useState(false);
     const [onLeave, setOnLeave] = useState(false);
     const [leaveReason, setLeaveReason] = useState("");
     const [remainingTime, setRemainingTime] = useState(0);
+    const [checkInTime, setCheckInTime] = useState(null);
 
     /* ---------------- FETCH TODAY ATTENDANCE ---------------- */
     useEffect(() => {
         const fetchAttendance = async () => {
-            const today = new Date().toISOString().split("T")[0];
+            const start = new Date();
+            start.setHours(0, 0, 0, 0);
+
+            const end = new Date();
+            end.setHours(23, 59, 59, 999);
 
             const q = query(
                 collection(db, "attendance"),
                 where("staffId", "==", staffId),
-                where("date", "==", today)
+                where("date", ">=", Timestamp.fromDate(start)),
+                where("date", "<=", Timestamp.fromDate(end))
             );
 
             const snapshot = await getDocs(q);
 
             if (!snapshot.empty) {
-                const doc = snapshot.docs[0];
-                const data = doc.data();
+                const snap = snapshot.docs[0];
+                const data = snap.data();
 
-                setAttendanceDoc(doc);
+                setAttendanceDoc({ id: snap.id, ...data });
 
                 if (data.status === "Leave") {
                     setOnLeave(true);
-                    setShowCheckIn(false);
                     return;
                 }
 
-                if (data.checkIn && !data.checkOut) {
+                if (data.checkIn) {
+                    const ci = data.checkIn.toDate().getTime();
                     setHasCheckedIn(true);
-                    setShowCheckIn(true);
-                }
+                    setCheckInTime(ci);
 
-                if (data.checkOut) {
-                    setShowCheckIn(false);
-                    setShowCheckOut(false);
+                    const diff = WORK_HOURS - (Date.now() - ci);
+                    setRemainingTime(diff > 0 ? diff : 0);
+                    setShowCheckOut(!data.checkOut && diff <= 0);
                 }
             }
         };
@@ -67,12 +73,19 @@ export default function Attendance() {
 
     /* ---------------- CHECK IN ---------------- */
     const handleCheckIn = async () => {
+        if (attendanceDoc) return;
+
         const now = new Date();
+        const midnight = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
 
         const docRef = await addDoc(collection(db, "attendance"), {
             staffId,
-            date: now.toISOString().split("T")[0],
-            checkIn: now.toLocaleTimeString(),
+            date: Timestamp.fromDate(midnight),
+            checkIn: serverTimestamp(),
             checkOut: null,
             status: "Pending",
             leaveReason: "",
@@ -81,75 +94,59 @@ export default function Attendance() {
 
         setAttendanceDoc({ id: docRef.id });
         setHasCheckedIn(true);
-        setShowCheckIn(true);
+        setCheckInTime(Date.now());
     };
 
-    /* ---------------- TIMER (FIREBASE BASED) ---------------- */
+    /* ---------------- TIMER ---------------- */
     useEffect(() => {
-        let interval;
+        if (!checkInTime) return;
 
-        if (hasCheckedIn && attendanceDoc) {
-            interval = setInterval(async () => {
-                const snapshot = await getDocs(
-                    query(
-                        collection(db, "attendance"),
-                        where("staffId", "==", staffId),
-                        where("date", "==", new Date().toISOString().split("T")[0])
-                    )
-                );
+        const interval = setInterval(() => {
+            const diff = WORK_HOURS - (Date.now() - checkInTime);
 
-                if (snapshot.empty) return;
-
-                const data = snapshot.docs[0].data();
-                if (!data.createdAt) return;
-
-                const checkInTime = data.createdAt.toDate().getTime();
-                const now = Date.now();
-
-                const diff = WORK_HOURS - (now - checkInTime);
-
-                if (diff <= 0) {
-                    setRemainingTime(0);
-                    setShowCheckOut(true);
-                    clearInterval(interval);
-                } else {
-                    setRemainingTime(diff);
-                }
-            }, 1000);
-        }
+            if (diff <= 0) {
+                setRemainingTime(0);
+                setShowCheckOut(true);
+                clearInterval(interval);
+            } else {
+                setRemainingTime(diff);
+            }
+        }, 1000);
 
         return () => clearInterval(interval);
-    }, [hasCheckedIn, attendanceDoc]);
+    }, [checkInTime]);
 
     /* ---------------- CHECK OUT ---------------- */
     const handleCheckOut = async () => {
-        if (!attendanceDoc) return;
+        if (!attendanceDoc || attendanceDoc.checkOut) return;
 
-        const now = new Date();
-
-        await updateDoc(
-            collection(db, "attendance").doc(attendanceDoc.id),
-            {
-                checkOut: now.toLocaleTimeString(),
-                status: "Present",
-            }
-        );
+        await updateDoc(doc(db, "attendance", attendanceDoc.id), {
+            checkOut: serverTimestamp(),
+            status: "Present",
+        });
 
         setShowCheckOut(false);
     };
 
     /* ---------------- LEAVE ---------------- */
     const handleLeave = async () => {
-        if (!leaveReason) {
+        if (!leaveReason.trim()) {
             alert("Please enter leave reason");
             return;
         }
 
+        if (attendanceDoc) return;
+
         const now = new Date();
+        const midnight = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+        );
 
         await addDoc(collection(db, "attendance"), {
             staffId,
-            date: now.toISOString().split("T")[0],
+            date: Timestamp.fromDate(midnight),
             checkIn: null,
             checkOut: null,
             status: "Leave",
@@ -158,15 +155,14 @@ export default function Attendance() {
         });
 
         setOnLeave(true);
-        setShowCheckIn(false);
     };
 
-    /* ---------------- TIME FORMAT ---------------- */
+    /* ---------------- FORMAT TIME ---------------- */
     const formatTime = (ms) => {
-        const totalSeconds = Math.floor(ms / 1000);
-        const h = Math.floor(totalSeconds / 3600);
-        const m = Math.floor((totalSeconds % 3600) / 60);
-        const s = totalSeconds % 60;
+        const t = Math.max(0, Math.floor(ms / 1000));
+        const h = Math.floor(t / 3600);
+        const m = Math.floor((t % 3600) / 60);
+        const s = t % 60;
 
         return `${h.toString().padStart(2, "0")}:${m
             .toString()
@@ -181,11 +177,10 @@ export default function Attendance() {
             <div className="attendance-card">
                 <h2>Mark Your Attendance</h2>
 
-                {showCheckIn && !onLeave && (
+                {!attendanceDoc && !onLeave && (
                     <button
                         className="attendance-btn btn-checkin"
                         onClick={handleCheckIn}
-                        disabled={hasCheckedIn}
                     >
                         Check In
                     </button>
@@ -193,8 +188,8 @@ export default function Attendance() {
 
                 {hasCheckedIn && !showCheckOut && (
                     <p className="info-text">
-                        Check out available in:{" "}
-                        <b>{formatTime(remainingTime)}</b>
+                        Check out available in:
+                        <b> {formatTime(remainingTime)}</b>
                     </p>
                 )}
 
@@ -207,7 +202,7 @@ export default function Attendance() {
                     </button>
                 )}
 
-                {!hasCheckedIn && !onLeave && (
+                {!attendanceDoc && !hasCheckedIn && !onLeave && (
                     <div className="leave-box">
                         <textarea
                             placeholder="Leave reason..."

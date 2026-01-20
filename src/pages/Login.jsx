@@ -1,46 +1,31 @@
-// import { signInWithPopup } from "firebase/auth";
-// import { auth, googleProvider } from "../Firebase";
-// import { useNavigate } from "react-router-dom";
-// import { collection, getDocs } from "firebase/firestore"
-// import { db } from "../Firebase"
+import { useState } from "react";
+import { auth, googleProvider } from "../Firebase";
+import { signInWithPopup } from "firebase/auth";
 
-// const Login = () => {
-//   const navigate = useNavigate();
+export default function Login() {
+    const [userId, setuserId] = useState(null);
 
-//   const handleLogin = async () => {
-//     try {
-//       await signInWithPopup(auth, googleProvider);
+    const handleGoogleLogin = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const email = result.user.email;
 
-//       // ✅ LOGIN SUCCESS → REDIRECT
-//       navigate("/");
+            setuserId(email);
+            console.log(email);
+            alert("Success");
+        } catch (error) {
+            alert(error.message);
+        }
+    };
 
-//     } catch (error) {
-//       console.error(error);
-//       alert("Login failed");
-//     }
-//   };
+    return (
+        <>
+            <button onClick={handleGoogleLogin}>
+                Login with Google
+            </button>
 
-//     console.log(db)
-    
-//     getDocs(collection(db,"task")).then(s =>
-//     s.forEach(d => console.log(d.id, d.data()))
-//   );
-
-//   return (
-//     <div style={{
-//       height: "100vh",
-//       display: "flex",
-//       alignItems: "center",
-//       justifyContent: "center",
-//       flexDirection: "column"
-//     }}>
-//       <h2>Login</h2>
-//       <button onClick={handleLogin}>
-//         Sign in with Google
-//       </button>
-//     </div>
-//   );
-// };
-
-
-// export default Login;
+            {userId && <p>Logged in as: {userId}</p>}
+        </>
+    );
+}
+// export  const userId = useEmail();

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 
 export default function CalendarProps() {
 
-    const { attendance } = useGlobal();
-    const userid = "9sVjI5RuQj5QblexVRs0";
+    const { attendance, staff } = useGlobal();
+     const userid = staff[0]?.employeeId
 
     const userAttendance = attendance.filter(
         att => att.staffId === userid
