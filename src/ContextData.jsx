@@ -69,7 +69,9 @@ export default function ContextData({ children }) {
                     type: "LOAD_TASK_SUCCESS",
                     taskload: taskData
                 });
+                return () => unsubTasks();
             });
+            
 
 
             // Task Form
@@ -93,7 +95,7 @@ export default function ContextData({ children }) {
         };
 
         getData();
-        return () => unsubTasks();
+        
     }, []);
 
     return (
