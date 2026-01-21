@@ -1,8 +1,9 @@
 import { useGlobal } from "../ContextData.jsx"
 import Header from "../components/Header"
+import Notice from "../components/Notice.jsx"
 
 export default function Dashboard() {
-  const { staff = [], tasks = [], attendance } = useGlobal()
+  const { staff = [], tasks = [], attendance, taskForm, notice } = useGlobal()
   const userId = staff[0]?.employeeId
   const userTasks = tasks.filter(task => task.assigneeId === userId);
   const taskStatusVa = "Pending"
@@ -11,7 +12,7 @@ export default function Dashboard() {
   const userAttendance = attendance.filter(att => att.staffId === userId);
   const userPre = "present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
-  console.log(staff)
+
   return (
     <>
       <Header />
@@ -36,34 +37,12 @@ export default function Dashboard() {
 
         <div id="postSlider" className="carousel slide" data-bs-ride="carousel">
           <div className="carousel-inner">
-
-            {/* <!-- Slide 1 --> */}
-            <div className="carousel-item active">
-              <div className="post-card">
-                <i className="bi bi-megaphone"></i>
-                <h6>Holiday Notice</h6>
-                <p>Sunday remain closed.</p>
-              </div>
-            </div>
-
-            {/* <!-- Slide 2 --> */}
-            <div className="carousel-item">
-              <div className="post-card">
-                <i className="bi bi-clock"></i>
-                <h6>Attendance Update</h6>
-                <p>Mark attendance before 10 AM.</p>
-              </div>
-            </div>
-
-            {/* <!-- Slide 3 --> */}
-            <div className="carousel-item">
-              <div className="post-card">
-                <i className="bi bi-list-check"></i>
-                <h6>Task Reminder</h6>
-                <p>Submit today's task by evening.</p>
-              </div>
-            </div>
-
+            
+            {
+              notice.map((item) => {
+                return( <Notice key={item.id} title={item.title} des={item.des} /> )
+              })
+            }
           </div>
         </div>
 

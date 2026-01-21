@@ -1,6 +1,11 @@
 import { useRef } from "react"
+import { useGlobal } from "../ContextData"
 export default function TaskForm() {
+    const { staff, taskForm } = useGlobal()
+    const userId = staff[0]?.employeeId
+    const formData = taskForm.filter(form => form.employeeId === userId);
     const submitted = useRef(false)
+    console.log(formData)
     const handleSubmit = () => {
         submitted.current = true
     }
@@ -25,26 +30,26 @@ export default function TaskForm() {
                     </p>
 
                     <form
-                        action="https://docs.google.com/forms/d/16ELfUzDf0ao6ae0w0u3MmbFnS5x2JVgtyPo5B4BncNI/formResponse"
+                        action={`${formData[0]?.formLink}formResponse`}
                         method="POST"
                         target="hidden_iframe"
                         onSubmit={handleSubmit}
                     >
                         <div className="form-group">
-                            <label>Website Name</label>
+                            <label>{formData[0]?.h1}</label>
                             <input
                                 type="text"
-                                name="entry.1005022941"
+                                name={`entry.${formData[0]?.in1}`}
                                 placeholder="example.com"
                                 required
                             />
                         </div>
 
                         <div className="form-group">
-                            <label>Post Link</label>
+                            <label>{formData[0]?.h2}</label>
                             <input
                                 type="url"
-                                name="entry.399640403"
+                                name={`entry.${formData[0]?.in2}`}
                                 placeholder="https://classified-site.com/post"
                                 required
                             />

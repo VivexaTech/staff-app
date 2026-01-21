@@ -1,6 +1,6 @@
 import { useReducer, createContext, useEffect, useContext } from "react";
 import { db } from "./Firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import reducer from "./Reducer";
 
 export const Context = createContext();
@@ -9,10 +9,19 @@ const initialStaff = {
     loading: true,
     staff: []
 };
+const initialNotice = {
+    loading: true,
+    notice: []
+};
 
 const initialTasks = {
     loading: true,
     tasks: []
+};
+
+const initialTaskForm = {
+    loading: true,
+    taskForm: []
 };
 
 const initialAttendance = {
@@ -22,7 +31,9 @@ const initialAttendance = {
 
 export default function ContextData({ children }) {
     const [staff, dispatch] = useReducer(reducer, initialStaff);
+    const [notice, dispatchNotice] = useReducer(reducer, initialNotice);
     const [tasks, dispatchTasks] = useReducer(reducer, initialTasks);
+    const [taskForm, dispatchTasksForm] = useReducer(reducer, initialTaskForm);
     const [attendance, dispatchAttendance] = useReducer(reducer, initialAttendance);
 
     useEffect(() => {
@@ -36,23 +47,39 @@ export default function ContextData({ children }) {
             }));
             dispatch({ type: "LOAD_STAFFID_SUCCESS", staffload: staffData });
 
-            // Tasks Data
-            dispatchTasks({ type: "LOAD_TASK_START" });
-            const taskApi = await getDocs(collection(db, "tasks"));
-            const taskData = taskApi.docs.map(doc => ({
+            // Notice
+            dispatchNotice({ type: "LOAD_NOTICE_START" });
+
+            const noticeApi = await getDocs(collection(db, "notice"));
+            const noticeData = noticeApi.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
-            dispatchTasks({ type: "LOAD_TASK_SUCCESS", taskload: taskData });
+            dispatchNotice({ type: "LOAD_NOTICE_SUCCESS", noticeload: noticeData });
 
-            // // Task Form
-            // dispatchTasks({ type: "LOAD_TASK_START" });
-            // const taskApi = await getDocs(collection(db, "tasks"));
-            // const taskData = taskApi.docs.map(doc => ({
-            //     id: doc.id,
-            //     ...doc.data()
-            // }));
-            dispatchTasks({ type: "LOAD_TASK_SUCCESS", taskload: taskData });
+            dispatchTasks({ type: "LOAD_TASK_START" });
+
+            const unsubTasks = onSnapshot(collection(db, "tasks"), (snapshot) => {
+                const taskData = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                dispatchTasks({
+                    type: "LOAD_TASK_SUCCESS",
+                    taskload: taskData
+                });
+            });
+
+
+            // Task Form
+            dispatchTasksForm({ type: "LOAD_TASKFORM_START" });
+            const taskFormApi = await getDocs(collection(db, "taskSubmit"));
+            const taskFormData = taskFormApi.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            dispatchTasksForm({ type: "LOAD_TASKFORM_SUCCESS", taskformload: taskFormData });
 
             // Attendance Data
             dispatchAttendance({ type: "LOAD_ATT_START" });
@@ -69,7 +96,7 @@ export default function ContextData({ children }) {
     }, []);
 
     return (
-        <Context.Provider value={{ ...tasks, ...staff, ...attendance }}>
+        <Context.Provider value={{ ...tasks, ...staff, ...attendance, ...taskForm, ...notice }}>
             {children}
         </Context.Provider>
     );
