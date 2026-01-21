@@ -3,7 +3,7 @@ import Header from "../components/Header"
 import Notice from "../components/Notice.jsx"
 
 export default function Dashboard() {
-  const { staff = [], tasks = [], attendance, taskForm, notice } = useGlobal()
+  const { staff = [], tasks = [], attendance, notice } = useGlobal()
   const userId = staff[0]?.employeeId
   const userTasks = tasks.filter(task => task.assigneeId === userId);
   const taskStatusVa = "Pending"
