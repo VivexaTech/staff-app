@@ -93,6 +93,7 @@ export default function ContextData({ children }) {
         };
 
         getData();
+        return () => unsubTasks();
     }, []);
 
     return (
