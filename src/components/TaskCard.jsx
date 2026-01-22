@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../Firebase"; // adjust path if needed
+import { db } from "../Firebase";
 
 export default function TaskCard({
   id,
@@ -12,7 +12,7 @@ export default function TaskCard({
 }) {
   const [progress, setProgress] = useState(prog);
   const [taskStatus, setTaskStatus] = useState(status);
-
+  
 
   const handleProgressChange = async (e) => {
     const newProgress = Number(e.target.value);
@@ -77,7 +77,7 @@ export default function TaskCard({
         </div>
 
         <div className="task-footer">
-          {/* <span>{dueDate}</span> */}
+          <span>{dueDate.toDate().toLocaleDateString()}</span>
         </div>
 
       </div>

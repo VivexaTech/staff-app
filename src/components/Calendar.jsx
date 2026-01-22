@@ -12,14 +12,24 @@ export default function Calendar({ year, monthName, dates }) {
                         <h6>{monthName} {year}</h6>
                     </div>
 
-                    <div className="calendar-grid">
-                        <span>Sun</span><span>Mon</span><span>Tue</span>
-                        <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                    {/* Week Days */}
+                    <div className="calendar-grid calendar-days">
+                        <span>Sun</span>
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                    </div>
+
+                    {/* Dates */}
+                    <div className="calendar-grid calendar-dates">
                         {dates}
                     </div>
 
                 </div>
             </div>
         </>
-    )
+    );
 }

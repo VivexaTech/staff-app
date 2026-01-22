@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import CalendarProps from "../components/CalendarProps";
 import Header from "../components/Header";
+import { useGlobal } from "../ContextData";
 import {
     addDoc,
     collection,
@@ -15,8 +16,11 @@ import {
 } from "firebase/firestore";
 import { db } from "../Firebase";
 
-export default function Attendance() { 
-    const staffId = "9sVjI5RuQj5QblexVRs0";
+export default function Attendance() {
+
+    const { staff } = useGlobal();
+    const staffId = staff?.[0]?.employeeId; // ✅ employeeId = staffId
+
     const WORK_HOURS = 3 * 60 * 60 * 1000; // 3 hours
 
     const [attendanceDoc, setAttendanceDoc] = useState(null);
@@ -29,6 +33,8 @@ export default function Attendance() {
 
     /* ---------------- FETCH TODAY ATTENDANCE ---------------- */
     useEffect(() => {
+        if (!staffId) return; // ⛔ wait for staffId
+
         const fetchAttendance = async () => {
             const start = new Date();
             start.setHours(0, 0, 0, 0);
@@ -69,11 +75,11 @@ export default function Attendance() {
         };
 
         fetchAttendance();
-    }, []);
+    }, [staffId]);
 
     /* ---------------- CHECK IN ---------------- */
     const handleCheckIn = async () => {
-        if (attendanceDoc) return;
+        if (!staffId || attendanceDoc) return;
 
         const now = new Date();
         const midnight = new Date(
@@ -130,6 +136,8 @@ export default function Attendance() {
 
     /* ---------------- LEAVE ---------------- */
     const handleLeave = async () => {
+        if (!staffId) return;
+
         if (!leaveReason.trim()) {
             alert("Please enter leave reason");
             return;
@@ -169,6 +177,7 @@ export default function Attendance() {
             .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
     };
 
+    /* ---------------- UI ---------------- */
     return (
         <>
             <Header />

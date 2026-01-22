@@ -7,7 +7,7 @@ export default function ProfilePage() {
   const userData = staff.filter(staf => staf.employeeId === userId);
   const userTasks = tasks.filter(task => task.assigneeId === userId);
   const userAttendance = attendance.filter(att => att.staffId === userId);
-  const userPre = "present"
+  const userPre = "Present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
   return (
     <>

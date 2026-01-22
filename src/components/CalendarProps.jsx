@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 export default function CalendarProps() {
 
     const { attendance, staff } = useGlobal();
-     const userId = staff[0]?.employeeId
+    const userId = staff[0]?.employeeId
 
     const userAttendance = attendance.filter(
         att => att.staffId === userId
@@ -30,7 +30,7 @@ export default function CalendarProps() {
 
     // 🔥 map: { 7: "present", 10: "absent" }
     const attendanceMap = {};
-    
+
     userAttendance.forEach(att => {
         if (!att.date?.seconds) return;
 
@@ -40,33 +40,61 @@ export default function CalendarProps() {
             attDate.getFullYear() === year &&
             attDate.getMonth() === month
         ) {
-            attendanceMap[attDate.getDate()] = att.status;
+            attendanceMap[attDate.getDate()] = att.status; // Present / Leave
         }
     });
 
-    const dates = [];
+const dates = [];
 
-    for (let i = 0; i < firstDay; i++) {
-        dates.push(<div key={"e" + i}></div>);
+// 🟦 EMPTY BOXES (month start se pehle)
+for (let i = 0; i < firstDay; i++) {
+    dates.push(
+        <div key={"e" + i} className="date empty"></div>
+    );
+}
+
+// 🟩 ACTUAL DATES
+for (let d = 1; d <= totalDays; d++) {
+
+    let statusClass = "";
+
+    // 🔥 FUTURE DATES → NORMAL
+    if (
+        year > currentDate.getFullYear() ||
+        (year === currentDate.getFullYear() &&
+            month === currentDate.getMonth() &&
+            d > today)
+    ) {
+        statusClass = "future";
     }
 
-    for (let d = 1; d <= totalDays; d++) {
-
-        let statusClass = attendanceMap[d] || "";
-
-        if (d === today) {
-            statusClass += " today";
-        }
-
-        dates.push(
-            <div
-                key={d}
-                className={`date ${statusClass}`}
-            >
-                {d}
-            </div>
-        );
+    // ✅ PRESENT
+    else if (attendanceMap[d] === "Present") {
+        statusClass = "present";
     }
+
+    // 🟡 LEAVE
+    else if (attendanceMap[d] === "Leave") {
+        statusClass = "leave";
+    }
+
+    // 🔴 ABSENT (past days only)
+    else {
+        statusClass = "absent";
+    }
+
+    if (d === today) {
+        statusClass += " today";
+    }
+
+    dates.push(
+        <div key={d} className={`date ${statusClass}`}>
+            {d}
+        </div>
+    );
+}
+
+
 
     return (
         <Calendar

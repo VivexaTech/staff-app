@@ -10,7 +10,7 @@ export default function Dashboard() {
   const taskStatus = userTasks.filter(taskStat => taskStat.status === taskStatusVa);
   const userData = staff.filter(staf => staf.employeeId === userId);
   const userAttendance = attendance.filter(att => att.staffId === userId);
-  const userPre = "present"
+  const userPre = "Present"
   const PresUser = userAttendance.filter(attPre => attPre.status === userPre);
 
   return (

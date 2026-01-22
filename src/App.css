@@ -246,6 +246,44 @@ body {
 .calendar-header h6 {
   font-weight: 600;
 }
+.date {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* 🟢 Present */
+.date.present {
+    background-color: #28a745;
+    color: #fff;
+}
+
+/* 🔴 Absent */
+.date.absent {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+/* 🟡 Leave */
+.date.leave {
+    background-color: #ffc107;
+    color: #000;
+}
+
+/* 🔵 Today */
+.date.today {
+    background-color: #007bff;
+    border: 2px solid #007bff;
+}
+.date.empty {
+    visibility: hidden;
+}
+
+
 
 .calendar-grid {
   display: grid;
